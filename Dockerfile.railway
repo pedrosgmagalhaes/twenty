@@ -1,20 +1,15 @@
 # ── Twenty CRM Dockerfile (wrapper) ──────────────────────────────────
 # Usa a imagem oficial do Twenty como base
-# Permite customizações futuras via fork
+# Roda migrações antes de iniciar o servidor
 
 FROM twentycrm/twenty:latest
 
-# Labels para identificação
 LABEL maintainer="10ContoAI"
-LABEL description="Twenty CRM - Deploy via fork"
+LABEL description="Twenty CRM - Deploy via fork (migrations auto)"
 
-# Variáveis de ambiente padrão
 ENV NODE_ENV=production
 ENV SERVER_PORT=3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:${SERVER_PORT}/healthz || exit 1
-
-# Porta do servidor
-EXPOSE 3000
+# Roda migrações do banco antes de iniciar o servidor
+# O entrypoint oficial do Twenty já faz isso, mas garantimos
+CMD ["sh", "-c", "yarn command:workspace:run database:migrate:prod && yarn start:prod"]
